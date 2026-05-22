@@ -10,35 +10,47 @@ A browser-based campaign management tool for the **Kill Team (2024)** Ctesiphus 
 - **Freeform hex placement** — click ghost indicators (dashed blue hexes) to place new hexes edge-to-edge, building any shape of map
 - **Flat-top hexes** with odd-q offset geometry; numbered and named per hex
 - **Hex types**: Surface, Tomb, Blocked — painted individually or via brush mode
-- **Setup mode** — paint-bucket style: enable Setup, choose a brush, click any placed hex to repaint it
-- **Pre-configured Maps** — load a predefined layout from the dropdown; currently includes *Ctesiphus Expedition – Map 1* (26 hexes)
-- **Auto-generate** — procedurally generate a map in centralised or chunked style, with configurable depth/cluster settings
-- **Explore animation** — clicking "Explore Hex" triggers a slot-machine reveal that rolls through location and condition entries before locking in the result
-- **Hex detail panel** — select any hex to edit its number, name, type, explore results, reserves, beast/prisoner flags, and freeform notes
+- **Setup mode** — paint-bucket style: enable Setup, choose a brush (Surface / Tomb / Blocked / Clear), click any placed hex to repaint it
+- **Pre-configured Maps** — load one of 5 predefined layouts from the dropdown (*Ctesiphus Expedition – Maps 1–5*)
+- **Auto-generate** — procedurally fill hex types in centralised or chunked style with configurable depth/cluster settings; automatically places 3–4 blocked hexes (maps < 37 hexes) or 4–5 (maps 37+)
+- **Explore animation** — clicking "Explore Hex" triggers a slot-machine reveal rolling through location and condition entries before locking in the result
+- **Solo/Coop threat roll popup** — after exploring a tomb hex the app prompts you to roll D6 and applies the result, or rolls automatically if Auto-roll Threat is enabled
+- **One-time tomb warning** — on first tomb hex exploration in Solo/Coop mode, a popup explains the full threat rules; can be dismissed permanently for the campaign
+- **Hex detail panel** — select any hex to edit its number, name, type, explore results, reserves, beast/prisoner flags, and freeform notes; blocked hexes show the location/condition that caused the block
 - **Kill-team flags** — mark which hexes are bases or camp sites for each kill team
 - **Zoom controls** — zoom in/out or fit the entire map to the available space
 - **Clear Map** — wipe all hexes with a confirmation prompt
 
 ### Kill Teams Tab
-- Add up to any number of kill teams
-- Select the team type from all 24 official Kill Team (2024) factions
+- Add any number of kill teams
+- Select the team type from all **32 official Kill Team (2024) factions**
 - Track operatives with name, type, status (Active / Injured / Casualty), XP, and injuries
 - Colour-coded status indicators and summary pip track at a glance
-- Objective tracker per team
-- Freeform notes per team
+- Objective tracker and freeform notes per team
 
 ### Campaign Log Tab
-- Timestamped log entries (manual)
-- Round and phase tracking displayed in the header
+- **Round & phase tracker** — displays current round and phase (Threat → Action → Battle → Movement); advance or revert one phase at a time; ending Movement phase increments the round
+- **Phase tooltips** — hover `?` icons next to each phase name for a summary of what happens in that phase
+- **Threat meter** — visual pip meter showing current threat vs. maximum
+- **Solo Threat Controls** (Solo/Coop mode only):
+  - Raise threat via D6 rolls (Explore Tomb 4+, Battle Win 3+, Battle Loss/Draw 5+, Search 5+, Doomsday Vault/Power Cell +D3)
+  - Lower threat via Resupply (−1 any hex, −D3 base/camp) with a hard cap of 3 uses per campaign
+  - Manual ±1 override for bookkeeping
+- **Multiplayer Threat Controls** — simple +1/−1 buttons
+- Timestamped manual log entries
 
 ### Generator Tab
-- Standalone D36 roller for Surface Location, Surface Condition, Tomb Location, and Tomb Condition tables
+- Standalone D36 roller for all four tables: Surface Location, Surface Condition, Tomb Location, Tomb Condition
 - Respects already-explored codes (avoids duplicates where the rules require it)
 
 ### Settings Tab
 - Rename the campaign
-- Toggle Solo / Multiplayer mode
-- Adjust threat level and reset campaign state
+- Toggle Solo/Coop vs. Multiplayer mode
+- Set Max Threat Level (campaign ends when reached; 7 recommended)
+- Adjust current round
+- Toggle **Auto-roll Threat (Solo)** — when off, a popup lets you roll manually; when on, the D6 is rolled automatically and shown as a toast
+- Export campaign to JSON / Import from JSON
+- `?` help icon tooltips on key fields explaining the relevant rules
 
 ---
 
@@ -51,7 +63,7 @@ A browser-based campaign management tool for the **Kill Team (2024)** Ctesiphus 
 ```
 killteam24-campaign-map/
 ├── index.html          # Entry point
-├── favicon.svg         # Crossed-swords hex icon
+├── favicon.svg         # Hex icon
 ├── css/
 │   └── style.css       # Dark Necron theme, all styles
 ├── js/
@@ -60,7 +72,9 @@ killteam24-campaign-map/
 │   ├── generator.js    # Dice functions, Generator tab UI
 │   └── hexmap.js       # SVG hex map, placement, explore mechanics, pre-configured maps
 └── source/
-    └── ctesiphus_expedition_campaign_map_1.json   # Exported Map 1 layout (26 hexes)
+    ├── file.html                              # Raw rules reference text
+    ├── ctesiphus_expedition_campaign_map_1–5.json  # Exported map layouts
+    └── map1–5.png                             # Map reference images
 ```
 
 ---
@@ -82,6 +96,7 @@ killteam24-campaign-map/
 2. Click **Explore Hex** in the detail panel
 3. Watch the slot-machine animation roll through locations and conditions
 4. Click **Confirm** to apply the result — the hex is marked explored and its location code appears on the map
+5. In Solo/Coop mode, tomb hexes trigger a D6 threat roll (manual popup or auto, depending on Settings)
 
 ### Loading a pre-configured map
 1. Open the **Pre-configured Maps** dropdown at the left of the map toolbar
@@ -113,9 +128,9 @@ Unique results (all except *Ruin* and *Clear Conditions*) cannot be duplicated a
 
 ---
 
-## Kill Team Factions Supported
+## Kill Team Factions Supported (32)
 
-Angels of Death · Battleclade · Blades of Khaine · Brood Brothers · Canoptek Circle · Celestian Insidiants · Chaos Cult · Deathwatch · Goremongers · Hernkyn Yaegirs · Mandrakes · Murderwing · Nemesis Claw · Plague Marines · Ratlings · Raveners · Sanctifiers · Scout Squad · Spectre Squad · Tempestus Aquilons · Vespid Stingwings · Wolf Scouts · Wrecka Krew · XV26 Stealth Battlesuits
+Angels of Death · Battleclade · Blades of Khaine · Brood Brothers · Canoptek Circle · Celestian Insidiants · Chaos Cult · Deathwatch · Exaction Squad · Farstalker Kinband · Fellgor Ravagers · Goremongers · Hand of the Archon · Hearthkyn Salvagers · Hernkyn Yaegirs · Hierotek Circle · Imperial Navy Breachers · Kasrkin · Mandrakes · Murderwing · Nemesis Claw · Plague Marines · Ratlings · Raveners · Sanctifiers · Scout Squad · Spectre Squad · Tempestus Aquilons · Vespid Stingwings · Wolf Scouts · Wrecka Krew · XV26 Stealth Battlesuits
 
 ---
 
@@ -124,4 +139,4 @@ Angels of Death · Battleclade · Blades of Khaine · Brood Brothers · Canoptek
 - **Pure vanilla JS/HTML/CSS** — no frameworks, no npm, no build tooling
 - **Hex geometry**: flat-top hexes, odd-q column offset. Centre formula: `cx = 1.5 × size × col`, `cy = √3 × size × row + (odd col ? √3/2 × size : 0)`
 - **Hex keys**: `"col,row"` strings (e.g. `"3,-1"`), used as both the hex ID and the localStorage map key
-- **Neighbour directions**: odd-q flat-top; even and odd columns use different offset sets to handle the zigzag correctly (JS modulo is sign-preserving, so `col % 2 !== 0` is used rather than `=== 1` to handle negative columns)
+- **Neighbour directions**: odd-q flat-top; even and odd columns use different offset sets to handle the zigzag correctly (`col % 2 !== 0` handles negative columns correctly vs. `=== 1`)
