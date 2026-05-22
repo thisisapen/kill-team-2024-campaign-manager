@@ -490,6 +490,8 @@ const App = (() => {
           </div>
         </div>
 
+        ${c.currentPhase === 2 ? renderActionPanel() : ''}
+
         <!-- Right: log entries -->
         <div class="log-main">
           <div class="panel">
@@ -503,6 +505,13 @@ const App = (() => {
                 <label>Phase</label>
                 <select id="log-entry-phase">
                   ${PHASE_NAMES.map((n, i) => `<option value="${i}" ${i === c.currentPhase ? 'selected' : ''}>${n}</option>`).join('')}
+                </select>
+              </div>
+              <div class="field-row">
+                <label>Kill Team <span class="field-opt">(opt.)</span></label>
+                <select id="log-entry-team">
+                  <option value="">— None —</option>
+                  ${state.killTeams.map((t, i) => `<option value="${i}">${escHtml(t.name)}</option>`).join('')}
                 </select>
               </div>
               <div class="field-row">
@@ -528,6 +537,7 @@ const App = (() => {
     document.getElementById('btn-prev-phase').addEventListener('click', prevPhase);
     document.getElementById('btn-add-log').addEventListener('click', addLogEntry);
     bindSoloThreatControls();
+    if (state.campaign.currentPhase === 2) bindActionPanel();
   }
 
   function getThreatClass(level) {
@@ -642,6 +652,366 @@ const App = (() => {
     });
   }
 
+  // ─── Action Phase Panel ──────────────────────────────────────────────────
+  function renderActionPanel() {
+    const teams = state.killTeams;
+    if (teams.length === 0) {
+      return `<div class="panel"><h3>Action Phase</h3><p class="empty-state" style="margin:0">No kill teams — add one in the Kill Teams tab.</p></div>`;
+    }
+    return `
+      <div class="panel" id="action-panel">
+        <h3>Action Phase</h3>
+        <div class="field-row">
+          <label>Kill Team</label>
+          <select id="action-team-sel">
+            <option value="">— Select kill team —</option>
+            ${teams.map((t, i) => `<option value="${i}">${escHtml(t.name)} · SP: ${t.sp !== undefined ? t.sp : 10}</option>`).join('')}
+          </select>
+        </div>
+        <div id="action-team-info" class="action-team-info"></div>
+        <div class="field-row">
+          <label>Action</label>
+          <select id="action-type-sel" disabled>
+            <option value="">— Select action —</option>
+            <option value="scout">Scout (1–3 SP)</option>
+            <option value="resupply">Resupply (0 SP)</option>
+            <option value="search">Search (1 SP)</option>
+            <option value="encamp">Encamp (variable SP)</option>
+            <option value="demolish">Demolish (3 SP)</option>
+          </select>
+        </div>
+        <div id="action-fields" class="action-fields"></div>
+        <p id="action-error" class="action-error"></p>
+        <button class="btn btn-primary" id="action-confirm-btn" disabled style="width:100%">Perform Action</button>
+      </div>
+    `;
+  }
+
+  function bindActionPanel() {
+    const teamSel   = document.getElementById('action-team-sel');
+    const typeSel   = document.getElementById('action-type-sel');
+    const confirmBtn = document.getElementById('action-confirm-btn');
+    if (!teamSel) return;
+
+    const refreshTeamInfo = (ti) => {
+      const infoEl = document.getElementById('action-team-info');
+      if (isNaN(ti) || ti < 0 || !state.killTeams[ti]) { infoEl.innerHTML = ''; return; }
+      const t = state.killTeams[ti];
+      infoEl.innerHTML = `
+        <div class="action-team-stats">
+          <span>SP <strong>${t.sp !== undefined ? t.sp : 10}</strong>/10</span>
+          <span>CP <strong>${t.cp || 0}</strong></span>
+          ${t.currentHex ? `<span>Hex <strong>${escHtml(t.currentHex)}</strong></span>` : ''}
+          ${t.baseHex    ? `<span>Base <strong>${escHtml(t.baseHex)}</strong></span>` : ''}
+        </div>
+      `;
+    };
+
+    teamSel.addEventListener('change', () => {
+      const ti = parseInt(teamSel.value, 10);
+      typeSel.disabled = isNaN(ti) || teamSel.value === '';
+      typeSel.value = '';
+      document.getElementById('action-fields').innerHTML = '';
+      document.getElementById('action-error').textContent = '';
+      confirmBtn.disabled = true;
+      refreshTeamInfo(ti);
+    });
+
+    typeSel.addEventListener('change', () => {
+      const ti = parseInt(teamSel.value, 10);
+      const actionType = typeSel.value;
+      confirmBtn.disabled = !actionType;
+      document.getElementById('action-error').textContent = '';
+      renderActionFields(ti, actionType);
+    });
+
+    confirmBtn.addEventListener('click', performAction);
+  }
+
+  function renderActionFields(ti, actionType) {
+    const fieldsEl = document.getElementById('action-fields');
+    if (!fieldsEl || !actionType) { if (fieldsEl) fieldsEl.innerHTML = ''; return; }
+    const isSolo = state.campaign.isSolo;
+
+    switch (actionType) {
+      case 'scout':
+        fieldsEl.innerHTML = `
+          <div class="field-row">
+            <label>SP to spend</label>
+            <select id="af-scout-sp">
+              <option value="1">1 SP — explore within 1 hex</option>
+              <option value="2">2 SP — explore within 2 hexes</option>
+              <option value="3">3 SP — explore within 3 hexes</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label>Target hex</label>
+            <input type="text" id="af-scout-hex" placeholder="Hex ID, e.g. 3,1">
+          </div>
+          <p class="action-rule-note">Select an unexplored, unblocked hex within the chosen range and explore it from the Map tab. In Solo/Coop, Scout is exempt from the tomb threat roll.</p>
+        `;
+        break;
+      case 'resupply':
+        fieldsEl.innerHTML = `
+          <div class="field-row">
+            <label>Current location</label>
+            <select id="af-resupply-loc">
+              <option value="base">Base hex — gain 10 SP</option>
+              <option value="camp">Camp hex — gain D3+3 SP</option>
+              <option value="other">Any other hex — gain 1 SP</option>
+              <option value="blocked">Blocked hex — gain 0 SP</option>
+            </select>
+          </div>
+          <p class="action-rule-note">No SP cost. SP caps at 10.${isSolo ? ' You may also lower threat via the Threat Controls above (max 3 times per campaign).' : ''}</p>
+        `;
+        break;
+      case 'search':
+        fieldsEl.innerHTML = `
+          ${isSolo ? `
+            <div class="field-row">
+              <label>Location</label>
+              <select id="af-search-loc">
+                <option value="normal">Normal hex — D6: 5+ raises threat</option>
+                <option value="special">Doomsday Vault (TL35) / Power Cell Sanctum (TL24) — raise threat by D3</option>
+              </select>
+            </div>
+          ` : ''}
+          <p class="action-rule-note">Cost: 1 SP. Resolves the Search rule of your current hex.${isSolo ? ' A dice roll determines threat impact in Solo/Coop.' : ''}</p>
+        `;
+        break;
+      case 'encamp':
+        fieldsEl.innerHTML = `
+          <div class="field-row">
+            <label>Hexes to nearest base/camp</label>
+            <input type="number" id="af-encamp-dist" min="0" value="1" style="width:80px">
+          </div>
+          <p class="action-rule-note">Cost = hexes to nearest base or camp (excluding blocked hexes). Gain a camp in your current hex (max 2 camps). You may remove an existing camp when performing this action.</p>
+        `;
+        break;
+      case 'demolish':
+        fieldsEl.innerHTML = `
+          <p class="action-rule-note">Cost: 3 SP. Removes an opponent's camp in your current hex. Requires you to have won (or challenged) a game against that opponent this campaign round.</p>
+        `;
+        break;
+    }
+  }
+
+  function performAction() {
+    const teamSel    = document.getElementById('action-team-sel');
+    const typeSel    = document.getElementById('action-type-sel');
+    const errorEl    = document.getElementById('action-error');
+    const ti         = parseInt(teamSel.value, 10);
+    const actionType = typeSel.value;
+    if (isNaN(ti) || !actionType) return;
+
+    const team  = state.killTeams[ti];
+    const sp    = team.sp !== undefined ? team.sp : 10;
+    const isSolo = state.campaign.isSolo;
+    const round  = state.campaign.currentRound;
+    const phase  = state.campaign.currentPhase;
+    errorEl.textContent = '';
+
+    switch (actionType) {
+      case 'scout': {
+        const spCost = parseInt(document.getElementById('af-scout-sp').value, 10) || 1;
+        const hexId  = (document.getElementById('af-scout-hex').value || '').trim();
+        if (sp < spCost) { errorEl.textContent = `Need ${spCost} SP — only have ${sp}.`; return; }
+        if (!hexId)      { errorEl.textContent = 'Enter a target hex ID.'; return; }
+        const before = sp;
+        team.sp       = Math.max(0, sp - spCost);
+        team.spSpent  = (team.spSpent || 0) + spCost;
+        addAutoLogEntry(ti, round, phase, `\uD83D\uDD2D Scout: targeted hex ${hexId} within ${spCost} hex${spCost > 1 ? 'es' : ''} (${spCost} SP). Explore that hex from the Map tab. SP: ${before} \u2192 ${team.sp}.`);
+        save(); renderLogTab();
+        showToast(`Scout logged. SP: ${before} \u2192 ${team.sp}.`, 'success');
+        break;
+      }
+      case 'resupply': {
+        const loc    = (document.getElementById('af-resupply-loc') || {}).value || 'other';
+        const before = sp;
+        if (loc === 'camp') {
+          let spGained = 0;
+          showActionDicePopup({
+            title: '\u26FA Resupply at Camp',
+            bodyHtml: `<p>Roll a D3, then add 3 to determine Supply points gained (maximum 10). Current SP: <strong>${before}</strong>.</p>`,
+            die: 'd3',
+            onRolled(roll) {
+              spGained   = Math.min(3 + roll, 10 - before);
+              team.sp    = Math.min(10, before + spGained);
+              return `D3 = <strong>${roll}</strong> \u2192 ${3 + roll} SP (capped to ${spGained} gained). SP: ${before} \u2192 ${team.sp}.`;
+            },
+            onClose() {
+              addAutoLogEntry(ti, round, phase, `\u26FA Resupply at camp: gained ${team.sp - before} SP (D3+3). SP: ${before} \u2192 ${team.sp}.`);
+              save(); renderLogTab();
+              showToast('Resupply at camp logged.', 'success');
+            }
+          });
+        } else {
+          const gained = loc === 'base' ? 10 - before : loc === 'other' ? Math.min(1, 10 - before) : 0;
+          team.sp = Math.min(10, before + gained);
+          const locLabel = { base: 'base hex', other: 'other hex', blocked: 'blocked hex' }[loc] || loc;
+          addAutoLogEntry(ti, round, phase, `\uD83C\uDFE0 Resupply at ${locLabel}: gained ${gained} SP. SP: ${before} \u2192 ${team.sp}.`);
+          save(); renderLogTab();
+          showToast(`Resupply: gained ${gained} SP.`, gained > 0 ? 'success' : 'info');
+        }
+        break;
+      }
+      case 'search': {
+        if (sp < 1) { errorEl.textContent = 'Need 1 SP to Search.'; return; }
+        const before = sp;
+        team.sp      = sp - 1;
+        team.spSpent = (team.spSpent || 0) + 1;
+        save();
+        if (!isSolo) {
+          addAutoLogEntry(ti, round, phase, `\uD83D\uDD0D Search: resolved Search rule of current hex. Cost: 1 SP. SP: ${before} \u2192 ${team.sp}.`);
+          save(); renderLogTab();
+          showToast('Search action logged.', 'success');
+        } else {
+          const loc = (document.getElementById('af-search-loc') || {}).value || 'normal';
+          if (loc === 'special') {
+            showActionDicePopup({
+              title: '\u26A0 Search \u2014 Threat Roll (D3)',
+              bodyHtml: `<p>Searching the Doomsday Vault or demolishing the Power Cell Sanctum raises the threat level by D3.</p>`,
+              die: 'd3',
+              onRolled(roll) {
+                changeThreat(roll);
+                return `D3 = <strong>${roll}</strong>: threat raised by ${roll}.`;
+              },
+              onClose() {
+                addAutoLogEntry(ti, round, phase, `\uD83D\uDD0D Search (Doomsday Vault / Power Cell): threat raised by D3. Cost: 1 SP. SP: ${before} \u2192 ${team.sp}.`);
+                save(); renderLogTab();
+                showToast('Search action logged.', 'success');
+              }
+            });
+          } else {
+            showSearchThreatPopup(ti, before, team, round, phase);
+          }
+        }
+        break;
+      }
+      case 'encamp': {
+        const dist = parseInt((document.getElementById('af-encamp-dist') || {}).value, 10) || 0;
+        if (sp < dist) { errorEl.textContent = `Need ${dist} SP — only have ${sp}.`; return; }
+        const before = sp;
+        team.sp      = Math.max(0, sp - dist);
+        team.spSpent = (team.spSpent || 0) + dist;
+        addAutoLogEntry(ti, round, phase, `\u26FA Encamp: camp established at hex ${escHtml(team.currentHex || '?')}. Cost: ${dist} SP. SP: ${before} \u2192 ${team.sp}.`);
+        save(); renderLogTab();
+        showToast(`Encamp logged. SP: ${before} \u2192 ${team.sp}.`, 'success');
+        break;
+      }
+      case 'demolish': {
+        if (sp < 3) { errorEl.textContent = 'Need 3 SP to Demolish.'; return; }
+        const before = sp;
+        team.sp      = sp - 3;
+        team.spSpent = (team.spSpent || 0) + 3;
+        addAutoLogEntry(ti, round, phase, `\uD83D\uDCA5 Demolish: opponent's camp removed at hex ${escHtml(team.currentHex || '?')}. Cost: 3 SP. SP: ${before} \u2192 ${team.sp}.`);
+        save(); renderLogTab();
+        showToast(`Demolish logged. SP: ${before} \u2192 ${team.sp}.`, 'success');
+        break;
+      }
+    }
+  }
+
+  function showActionDicePopup({ title, bodyHtml, die, onRolled, onClose }) {
+    if (document.getElementById('action-dice-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'action-dice-overlay';
+    overlay.innerHTML = `
+      <div class="threat-roll-modal">
+        <div class="threat-roll-header">${title}</div>
+        <div class="threat-roll-body threat-roll-rule">${bodyHtml}</div>
+        <div class="threat-roll-result" id="adp-result"></div>
+        <div class="threat-roll-footer">
+          <button class="btn btn-primary threat-roll-dice-btn" id="adp-roll-btn">\uD83C\uDFB2 Roll ${die.toUpperCase()}</button>
+          <button class="btn" id="adp-cont-btn" style="display:none">Continue</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    document.getElementById('adp-roll-btn').addEventListener('click', () => {
+      const roll = die === 'd3' ? Generator.rollD3() : Generator.rollD6();
+      const msg  = onRolled(roll);
+      document.getElementById('adp-result').innerHTML = `<div class="threat-result-raised">${msg}</div>`;
+      document.getElementById('adp-roll-btn').style.display = 'none';
+      document.getElementById('adp-cont-btn').style.display = '';
+    });
+
+    document.getElementById('adp-cont-btn').addEventListener('click', () => {
+      overlay.remove();
+      if (onClose) onClose();
+    });
+  }
+
+  function showSearchThreatPopup(ti, spBefore, team, round, phase) {
+    if (document.getElementById('action-dice-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'action-dice-overlay';
+    overlay.innerHTML = `
+      <div class="threat-roll-modal">
+        <div class="threat-roll-header">\u26A0 Search \u2014 Threat Roll</div>
+        <div class="threat-roll-body">
+          <p class="threat-roll-rule-title">Solo / Cooperative Search Rule</p>
+          <div class="threat-roll-rule">
+            <p>After performing the Search action, roll one D6:</p>
+            <ul>
+              <li>On a <strong>5 or 6</strong> \u2014 raise the threat level by 1 (or spend 1 additional SP to avoid it).</li>
+              <li>On a <strong>1\u20134</strong> \u2014 threat level is unchanged.</li>
+            </ul>
+            <p>SP remaining: <span id="stp-sp"><strong>${team.sp}</strong></span> / 10</p>
+          </div>
+        </div>
+        <div class="threat-roll-result" id="stp-result"></div>
+        <div id="stp-avoid-row" style="display:none;text-align:center;margin-top:.5rem">
+          <button class="btn btn-sm btn-warn" id="stp-avoid-btn">Spend 1 SP to cancel threat raise</button>
+        </div>
+        <div class="threat-roll-footer">
+          <button class="btn btn-primary threat-roll-dice-btn" id="stp-roll-btn">\uD83C\uDFB2 Roll D6</button>
+          <button class="btn" id="stp-cont-btn" style="display:none">Continue</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    let threatWillRaise = false;
+
+    document.getElementById('stp-roll-btn').addEventListener('click', () => {
+      const roll = Generator.rollD6();
+      const raised = roll >= 5;
+      const resultEl = document.getElementById('stp-result');
+      if (raised) {
+        threatWillRaise = true;
+        const canAvoid = team.sp > 0;
+        resultEl.innerHTML = `<div class="threat-result-raised">\uD83C\uDFB2 Rolled <strong>${roll}</strong> \u2014 5+ met! Threat will raise by 1${canAvoid ? ' \u2014 or spend 1 SP to avoid.' : '.'}</div>`;
+        if (canAvoid) document.getElementById('stp-avoid-row').style.display = '';
+      } else {
+        resultEl.innerHTML = `<div class="threat-result-safe">\uD83C\uDFB2 Rolled <strong>${roll}</strong> \u2014 needs 5+. Threat unchanged.</div>`;
+      }
+      document.getElementById('stp-roll-btn').style.display = 'none';
+      document.getElementById('stp-cont-btn').style.display = '';
+    });
+
+    document.getElementById('stp-avoid-btn').addEventListener('click', () => {
+      team.sp       = Math.max(0, team.sp - 1);
+      team.spSpent  = (team.spSpent || 0) + 1;
+      threatWillRaise = false;
+      document.getElementById('stp-sp').innerHTML = `<strong>${team.sp}</strong>`;
+      document.getElementById('stp-result').innerHTML = `<div class="threat-result-safe">Spent 1 additional SP to avoid threat raise. SP: ${team.sp + 1} \u2192 ${team.sp}.</div>`;
+      document.getElementById('stp-avoid-row').style.display = 'none';
+      save();
+    });
+
+    document.getElementById('stp-cont-btn').addEventListener('click', () => {
+      overlay.remove();
+      if (threatWillRaise) changeThreat(1);
+      const avoidNote = !threatWillRaise && team.sp < spBefore - 1 ? ' Spent 1 extra SP to avoid threat raise.' : '';
+      const threatNote = threatWillRaise ? ' Threat raised by 1.' : ' Threat unchanged.';
+      addAutoLogEntry(ti, round, phase, `\uD83D\uDD0D Search: resolved Search rule. Cost: 1 SP.${threatNote}${avoidNote} SP: ${spBefore} \u2192 ${team.sp}.`);
+      save(); renderLogTab();
+      showToast('Search action logged.', 'success');
+    });
+  }
+
   function changeThreat(delta) {
     const c = state.campaign;
     c.threatLevel = Math.max(0, Math.min(c.maxThreat, c.threatLevel + delta));
@@ -724,30 +1094,48 @@ const App = (() => {
   function addLogEntry() {
     const roundEl = document.getElementById('log-entry-round');
     const phaseEl = document.getElementById('log-entry-phase');
-    const textEl = document.getElementById('log-entry-text');
+    const teamEl  = document.getElementById('log-entry-team');
+    const textEl  = document.getElementById('log-entry-text');
     const text = textEl.value.trim();
     if (!text) { showToast('Entry cannot be empty.', 'warn'); return; }
+    const killTeamIdx = teamEl && teamEl.value !== '' ? parseInt(teamEl.value, 10) : undefined;
 
     state.campaignLog.unshift({
       id: Date.now(),
       round: parseInt(roundEl.value, 10) || state.campaign.currentRound,
       phase: parseInt(phaseEl.value, 10),
       text,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      ...(killTeamIdx !== undefined && { killTeamIdx })
     });
     save();
     renderLogTab();
     showToast('Log entry added.', 'success');
   }
 
+  function addAutoLogEntry(killTeamIdx, round, phase, text) {
+    state.campaignLog.unshift({
+      id: Date.now(),
+      round,
+      phase,
+      text,
+      timestamp: new Date().toISOString(),
+      killTeamIdx,
+      auto: true
+    });
+  }
+
   function buildLogEntry(entry, idx) {
     const d = new Date(entry.timestamp);
     const ts = `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+    const team = entry.killTeamIdx !== undefined ? state.killTeams[entry.killTeamIdx] : null;
+    const ktBadge = team ? `<span class="log-kt-badge">${escHtml(team.name)}</span>` : '';
     return `
-      <div class="log-entry">
+      <div class="log-entry${entry.auto ? ' log-entry-auto' : ''}">
         <div class="log-entry-meta">
           <span class="log-round">Round ${entry.round}</span>
           <span class="log-phase">${PHASE_NAMES[entry.phase] || 'Unknown'}</span>
+          ${ktBadge}
           <span class="log-ts">${ts}</span>
           <button class="btn-icon btn-delete-log" data-idx="${idx}" title="Delete entry">✕</button>
         </div>

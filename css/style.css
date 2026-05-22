@@ -1253,7 +1253,8 @@ select option { background: var(--bg-panel); }
 /* ─── Threat Roll Popup ───────────────────────────────────────────────────── */
 #threat-roll-overlay,
 #tomb-warning-overlay,
-#campaign-end-overlay {
+#campaign-end-overlay,
+#action-dice-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.85);
@@ -1364,6 +1365,64 @@ select option { background: var(--bg-panel); }
 }
 .campaign-end-header {
   color: var(--accent-gold);
+}
+
+/* ─── Action Phase Panel ────────────────────────────────────────────────────── */
+.action-team-info {
+  margin: .1rem 0 .5rem;
+}
+.action-team-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem .75rem;
+  padding: .4rem .6rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .8rem;
+  color: var(--text-secondary);
+}
+.action-team-stats strong { color: var(--text-primary); }
+.action-fields {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin-bottom: .4rem;
+}
+.action-rule-note {
+  font-size: .78rem;
+  color: var(--text-dim);
+  line-height: 1.45;
+  margin: .1rem 0 0;
+  padding: .35rem .5rem;
+  border-left: 2px solid var(--border-light);
+}
+.action-error {
+  font-size: .82rem;
+  color: var(--threat-red);
+  min-height: 1.1rem;
+  margin: .1rem 0;
+}
+
+/* ─── Log entry: kill team badge + auto entries ─────────────────────────────── */
+.log-kt-badge {
+  display: inline-block;
+  padding: .1rem .45rem;
+  border-radius: 3px;
+  background: rgba(232,184,75,.15);
+  border: 1px solid rgba(232,184,75,.3);
+  font-size: .7rem;
+  color: var(--accent-gold);
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.log-entry-auto {
+  border-left: 2px solid rgba(120,120,160,.35);
+}
+.field-opt {
+  font-size: .72rem;
+  color: var(--text-dim);
+  font-weight: 400;
 }
 
 @media (max-width: 700px) {
