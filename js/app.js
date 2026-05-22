@@ -54,6 +54,7 @@ const App = (() => {
         maxThreat: 10,
         threatLowerUsesLeft: 3,
         autoThreatRoll: false,
+        tombWarningSeen: false,
         started: false
       },
       killTeams: [],

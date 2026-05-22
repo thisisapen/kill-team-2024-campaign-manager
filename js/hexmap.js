@@ -1179,6 +1179,50 @@ const HexMap = (() => {
     });
   }
 
+  // ─── One-time tomb warning (solo/coop) ────────────────────────────────────
+  function showTombWarning(onContinue) {
+    const overlay = document.createElement('div');
+    overlay.id = 'tomb-warning-overlay';
+    overlay.innerHTML = `
+      <div class="threat-roll-modal">
+        <div class="threat-roll-header">⚠ SOLO / COOP — TOMB HEX THREAT RULES</div>
+        <div class="threat-roll-body">
+          <p class="threat-roll-rule-title">Before you explore this tomb hex&hellip;</p>
+          <div class="threat-roll-rule">
+            <p>In a solo or cooperative campaign, the threat level is <strong>not</strong> raised automatically each Threat phase. Instead, it rises and falls based on your actions.</p>
+            <p><strong>Whenever you explore a tomb hex</strong> (unless via the Scout campaign action), roll one D6:</p>
+            <ul>
+              <li>On a <strong>4, 5 or 6</strong> &mdash; raise the threat level by 1.</li>
+              <li>On a <strong>1, 2 or 3</strong> &mdash; the threat level is unchanged.</li>
+            </ul>
+            <p>Other events that also raise threat: finishing a battle (D6 roll), performing Search (D6 roll, or spend 1 SP to avoid), or searching the Doomsday Vault / demolishing the Power Cell Sanctum (raise by D3).</p>
+            <p>You may <strong>lower</strong> threat by performing Resupply &mdash; up to <strong>3 times per campaign total</strong>.</p>
+            <p>If the threat level reaches its maximum, <strong>the campaign ends</strong> at the end of that round.</p>
+          </div>
+        </div>
+        <div class="tomb-warning-dismiss">
+          <label class="tomb-warn-label">
+            <input type="checkbox" id="tomb-warn-no-show">
+            Don\'t show this again for this campaign
+          </label>
+        </div>
+        <div class="threat-roll-footer">
+          <button class="btn btn-primary" id="tomb-warn-continue">Continue to Explore</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    document.getElementById('tomb-warn-continue').addEventListener('click', () => {
+      if (document.getElementById('tomb-warn-no-show').checked) {
+        App.state.campaign.tombWarningSeen = true;
+        App.save();
+      }
+      overlay.remove();
+      onContinue();
+    });
+  }
+
   // ─── Explore a hex ────────────────────────────────────────────────────────
   function exploreHex(hexId) {
     const hex = App.state.hexes[hexId];
@@ -1191,6 +1235,16 @@ const HexMap = (() => {
       return;
     }
 
+    // Show one-time rules warning for solo/coop before first tomb explore
+    if (hex.type === 'tomb' && App.state.campaign.isSolo && !App.state.campaign.tombWarningSeen) {
+      showTombWarning(() => _proceedExplore(hexId));
+      return;
+    }
+    _proceedExplore(hexId);
+  }
+
+  function _proceedExplore(hexId) {
+    const hex = App.state.hexes[hexId];
     const locTable  = hex.type === 'surface' ? 'surfaceLocation'  : 'tombLocation';
     const conTable  = hex.type === 'surface' ? 'surfaceCondition' : 'tombCondition';
     const existing  = getExistingCodes(App.state, locTable);

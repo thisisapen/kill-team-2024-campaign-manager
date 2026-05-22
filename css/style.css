@@ -1191,7 +1191,8 @@ select option { background: var(--bg-panel); }
 }
 
 /* ─── Threat Roll Popup ───────────────────────────────────────────────────── */
-#threat-roll-overlay {
+#threat-roll-overlay,
+#tomb-warning-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.85);
@@ -1279,6 +1280,21 @@ select option { background: var(--bg-panel); }
   padding-top: .25rem;
 }
 .threat-roll-dice-btn { font-size: 1.05rem; padding: .55rem 2rem; }
+
+.tomb-warning-dismiss {
+  padding: .5rem .1rem;
+  border-top: 1px solid var(--border);
+  font-size: .83rem;
+  color: var(--text-dim);
+}
+.tomb-warn-label {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  cursor: pointer;
+  user-select: none;
+}
+.tomb-warn-label input[type="checkbox"] { accent-color: var(--accent-gold); width: 14px; height: 14px; }
 
 @media (max-width: 700px) {
   .map-wrap { flex-direction: column; }
