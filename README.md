@@ -1,6 +1,6 @@
 # Kill Team: Ctesiphus Expedition — Campaign Tracker
 
-A browser-based campaign management tool for the **Kill Team (2024)** Ctesiphus Expedition campaign. No server, no build tools, no dependencies — open `index.html` and play.
+A browser-based campaign management tool to generate maps and management campaigns for games similiar to the **Kill Team (2024)** Ctesiphus Expedition campaign. No server, no build tools, no dependencies — open `index.html` and play.
 
 ---
 
@@ -41,7 +41,7 @@ A browser-based campaign management tool for the **Kill Team (2024)** Ctesiphus 
 
 ### Generator Tab
 - Standalone D36 roller for all four tables: Surface Location, Surface Condition, Tomb Location, Tomb Condition
-- Respects already-explored codes (avoids duplicates where the rules require it)
+- Independent of the campaign — all results are always possible regardless of what's on the map
 
 ### Settings Tab
 - Rename the campaign
@@ -71,10 +71,6 @@ killteam24-campaign-map/
 │   ├── data.js         # D36 roll tables (locations, conditions, rules text)
 │   ├── generator.js    # Dice functions, Generator tab UI
 │   └── hexmap.js       # SVG hex map, placement, explore mechanics, pre-configured maps
-└── source/
-    ├── file.html                              # Raw rules reference text
-    ├── ctesiphus_expedition_campaign_map_1–5.json  # Exported map layouts
-    └── map1–5.png                             # Map reference images
 ```
 
 ---

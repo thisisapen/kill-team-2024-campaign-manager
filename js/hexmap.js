@@ -271,11 +271,6 @@ const HexMap = (() => {
         </div>
 
         <div class="map-tb-right">
-          <button class="btn btn-sm" id="map-zoom-out" title="Zoom out">−</button>
-          <span class="map-tb-zoom">${hexSize}px</span>
-          <button class="btn btn-sm" id="map-zoom-in" title="Zoom in">+</button>
-          <button class="btn btn-sm" id="map-zoom-fit" title="Fit entire map in view">Fit</button>
-          <span class="map-tb-sep"></span>
           <span class="map-tb-legend">
             <span class="legend-pip legend-surface"></span>Surface
             <span class="legend-pip legend-tomb"></span>Tomb
@@ -359,17 +354,13 @@ const HexMap = (() => {
         renderAll();
       });
     }
-    document.getElementById('map-zoom-in').addEventListener('click', () => {
-      hexSize = Math.min(hexSize + 4, 72);
-      renderSVG();
-      renderToolbar();
-    });
-    document.getElementById('map-zoom-out').addEventListener('click', () => {
-      hexSize = Math.max(hexSize - 4, 18);
-      renderSVG();
-      renderToolbar();
-    });
-    document.getElementById('map-zoom-fit').addEventListener('click', fitZoom);
+    // Zoom buttons hidden (disabled while map uses 100% width layout)
+    const _zoomIn  = document.getElementById('map-zoom-in');
+    const _zoomOut = document.getElementById('map-zoom-out');
+    const _zoomFit = document.getElementById('map-zoom-fit');
+    if (_zoomIn)  _zoomIn.addEventListener('click',  () => { hexSize = Math.min(hexSize + 4, 72); renderSVG(); renderToolbar(); });
+    if (_zoomOut) _zoomOut.addEventListener('click', () => { hexSize = Math.max(hexSize - 4, 18); renderSVG(); renderToolbar(); });
+    if (_zoomFit) _zoomFit.addEventListener('click', fitZoom);
     const clearBtn = document.getElementById('map-btn-clear');
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
@@ -477,6 +468,36 @@ const HexMap = (() => {
     });
 
     svg.innerHTML = html;
+    renderMapThreatOverlay();
+  }
+
+  function renderMapThreatOverlay() {
+    const wrap = document.getElementById('map-canvas-wrap');
+    if (!wrap) return;
+    const c = App.state.campaign;
+    const level = c.threatLevel || 0;
+    const max   = c.maxThreat  || 10;
+
+    let el = document.getElementById('map-threat-overlay');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'map-threat-overlay';
+      el.className = 'map-threat-overlay';
+      wrap.appendChild(el);
+    }
+
+    const blocks = [];
+    for (let pip = max; pip >= 1; pip--) {
+      const filled = pip <= level;
+      const col = pip <= 3 ? 'pip-green' : pip <= 6 ? 'pip-yellow' : pip <= 9 ? 'pip-orange' : 'pip-red';
+      blocks.push(`<div class="map-threat-block${filled ? ' filled ' + col : ''}" title="Threat ${pip}/${max}"></div>`);
+    }
+
+    el.innerHTML = `
+      <div class="map-threat-overlay-title">THREAT</div>
+      <div class="map-threat-overlay-bar">${blocks.join('')}</div>
+      <div class="map-threat-overlay-value">${level}<span class="map-threat-overlay-max">&#8202;/&#8202;${max}</span></div>
+    `;
   }
 
   function buildGhostSVG(key, cx, cy) {

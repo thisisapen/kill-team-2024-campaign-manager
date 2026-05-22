@@ -1093,6 +1093,58 @@ select option { background: var(--bg-panel); }
 }
 
 .hex-poly:hover { filter: brightness(1.35); }
+
+/* ── Map threat overlay ─────────────────────────────────── */
+.map-threat-overlay {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 10;
+  background: rgba(8,8,15,0.78);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: .5rem .45rem;
+}
+.map-threat-overlay-title {
+  font-size: .55rem;
+  letter-spacing: .14em;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+.map-threat-overlay-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.map-threat-block {
+  width: 28px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-surface);
+  transition: background var(--transition), border-color var(--transition);
+}
+.map-threat-block.filled.pip-green  { background: var(--threat-green);  border-color: var(--threat-green); }
+.map-threat-block.filled.pip-yellow { background: var(--threat-yellow); border-color: var(--threat-yellow); }
+.map-threat-block.filled.pip-orange { background: var(--threat-orange); border-color: var(--threat-orange); }
+.map-threat-block.filled.pip-red    { background: var(--threat-red);    border-color: var(--threat-red); }
+.map-threat-overlay-value {
+  font-size: .78rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-gold);
+  line-height: 1;
+}
+.map-threat-overlay-max {
+  font-size: .6rem;
+  color: var(--text-dim);
+}
 .hex-ghost { opacity: .45; transition: opacity .15s; }
 .hex-ghost:hover { opacity: .85; }
 

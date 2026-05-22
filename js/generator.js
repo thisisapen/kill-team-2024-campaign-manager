@@ -113,7 +113,7 @@ const Generator = (() => {
 
     container.innerHTML = `
       <div class="gen-intro">
-        <p>Roll D3 (tens) + D6 (units) = D36 result. Duplicate non-Ruin results are automatically re-rolled.</p>
+        <p>Roll D3 (tens) + D6 (units) = D36 result. Independent of the current campaign — all results are possible.</p>
       </div>
       <div class="gen-groups">
         ${GROUPS.map(g => buildGroup(g)).join('')}
@@ -209,12 +209,8 @@ const Generator = (() => {
     d3El.classList.add('spinning');
     d6El.classList.add('spinning');
 
-    // Build existing codes from App state
-    const existingCodes = typeof App !== 'undefined'
-      ? getExistingCodes(App.state, key)
-      : [];
-
-    const result = rollOnTable(key, existingCodes);
+    // Generator tab rolls freely — no campaign state is checked
+    const result = rollOnTable(key, []);
     if (!result) {
       btn.disabled = false;
       btn.textContent = 'Roll D36';
