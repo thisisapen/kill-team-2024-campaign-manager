@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kill Team: Ctesiphus Expedition</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ─── Header ────────────────────────────────────────────────────────── -->
+  <header id="app-header">
+    <div class="header-logo" aria-hidden="true">⬡</div>
+    <div class="header-text">
+      <div class="header-title">Kill Team Campaign</div>
+      <div id="header-campaign-name">Ctesiphus Expedition</div>
+    </div>
+    <div id="header-threat" class="threat-badge threat-green">Threat: 0/10</div>
+  </header>
+
+  <!-- ─── Tab Navigation ────────────────────────────────────────────────── -->
+  <nav id="tab-nav" role="tablist" aria-label="Campaign sections">
+    <button class="tab-btn" role="tab" data-tab="map"       aria-controls="tab-map">Map</button>
+    <button class="tab-btn" role="tab" data-tab="killteam"  aria-controls="tab-killteam">Kill Teams</button>
+    <button class="tab-btn" role="tab" data-tab="log"       aria-controls="tab-log">Campaign Log</button>
+    <button class="tab-btn" role="tab" data-tab="generator" aria-controls="tab-generator">Generator</button>
+    <button class="tab-btn" role="tab" data-tab="settings"  aria-controls="tab-settings">Settings</button>
+  </nav>
+
+  <!-- ─── Tab Content ───────────────────────────────────────────────────── -->
+  <main id="tab-content">
+
+    <!-- MAP (placeholder — Chunk 2 will replace with SVG hex map) -->
+    <section id="tab-map" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-map">
+      <!-- Populated by App.renderMapPlaceholder() or HexMap.init() -->
+    </section>
+
+    <!-- KILL TEAMS -->
+    <section id="tab-killteam" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-killteam">
+      <!-- Populated by renderKillTeamTab() -->
+    </section>
+
+    <!-- CAMPAIGN LOG -->
+    <section id="tab-log" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-log">
+      <!-- Populated by renderLogTab() -->
+    </section>
+
+    <!-- GENERATOR -->
+    <section id="tab-generator" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-generator">
+      <!-- Populated by Generator.init() -->
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="tab-settings" class="tab-pane" role="tabpanel" aria-labelledby="tab-btn-settings">
+      <!-- Populated by renderSettingsTab() -->
+    </section>
+
+  </main>
+
+</div><!-- /#app -->
+
+<!-- ─── New Campaign Modal ────────────────────────────────────────────────── -->
+<div id="new-campaign-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <h2 id="modal-title">Start New Campaign</h2>
+    <p class="modal-subtitle">Set up your Ctesiphus Expedition campaign. You can change these later in Settings.</p>
+    <form id="new-campaign-form" novalidate>
+
+      <div class="modal-field">
+        <label for="modal-name">Campaign Name</label>
+        <input type="text" id="modal-name" value="Ctesiphus Expedition" required
+               autocomplete="off" placeholder="Give your campaign a name">
+      </div>
+
+      <div class="modal-field">
+        <label for="modal-mode">Mode</label>
+        <select id="modal-mode">
+          <option value="true" selected>Solo / Cooperative</option>
+          <option value="false">Multiplayer</option>
+        </select>
+      </div>
+
+      <div class="modal-field">
+        <label>Grid Size</label>
+        <div style="display:flex;gap:.75rem;align-items:center">
+          <div>
+            <label for="modal-mapcols" style="font-size:.8rem;color:var(--text-dim);display:block;margin-bottom:.2rem">Columns</label>
+            <input type="number" id="modal-mapcols" value="8" min="1" max="30" style="width:80px">
+          </div>
+          <span style="color:var(--text-dim);font-size:1.2rem;margin-top:1rem">×</span>
+          <div>
+            <label for="modal-maprows" style="font-size:.8rem;color:var(--text-dim);display:block;margin-bottom:.2rem">Rows</label>
+            <input type="number" id="modal-maprows" value="7" min="1" max="30" style="width:80px">
+          </div>
+        </div>
+        <p style="font-size:.78rem;color:var(--text-dim);margin-top:.3rem">
+          e.g. 8×7 = 56 hexes (solo), 6×6 = 36 (multiplayer). Use the Generator on the map to fill hex types.
+        </p>
+      </div>
+
+      <div class="modal-field">
+        <label for="modal-maxthreat">Max Threat Level</label>
+        <input type="number" id="modal-maxthreat" value="10" min="1" max="20">
+        <p style="font-size:.78rem;color:var(--text-dim);margin-top:.3rem">
+          Solo/coop: 10 (campaign ends when reached). Multiplayer: 7 is a good default.
+        </p>
+      </div>
+
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">Begin Campaign</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ─── Toast Notifications ───────────────────────────────────────────────── -->
+<div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ─── Scripts (order matters: data → generator → app → hexmap) ──────────── -->
+<script src="js/data.js"></script>
+<script src="js/generator.js"></script>
+<script src="js/app.js"></script>
+<script src="js/hexmap.js"></script>
+
+</body>
+</html>
