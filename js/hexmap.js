@@ -797,6 +797,23 @@ const HexMap = (() => {
       ${hex.type === 'blocked' ? `
         <div class="detail-section detail-blocked-note">
           <span class="tag tag-warn">Blocked — no actions or movement through this hex</span>
+          ${locationEntry ? `
+            <div class="detail-blocked-reason">
+              <div class="detail-roll-row" style="margin-top:.6rem">
+                <span class="result-code">${locationEntry.code}</span>
+                <span class="result-name">${locationEntry.name}</span>
+              </div>
+              <div class="result-rules detail-rules">${locationEntry.rules.replace(/\n/g, '<br>')}</div>
+              ${conditionEntry ? `
+                <hr class="detail-hr">
+                <div class="detail-roll-row">
+                  <span class="result-code">${conditionEntry.code}</span>
+                  <span class="result-name">${conditionEntry.name}</span>
+                </div>
+                <div class="result-rules detail-rules">${conditionEntry.rules.replace(/\n/g, '<br>')}</div>
+              ` : ''}
+            </div>
+          ` : ''}
         </div>
       ` : hex.type ? `
         <div class="detail-section">
