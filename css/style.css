@@ -69,7 +69,8 @@ p:last-child { margin-bottom: 0; }
 #app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ─── Header ─────────────────────────────────────────────────────────────── */
@@ -152,7 +153,8 @@ p:last-child { margin-bottom: 0; }
 /* ─── Tab Panes ───────────────────────────────────────────────────────────── */
 #tab-content {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .tab-pane {
@@ -161,6 +163,9 @@ p:last-child { margin-bottom: 0; }
   max-width: 1100px;
   margin: 0 auto;
   width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 .tab-pane.active { display: block; }
 
@@ -817,6 +822,7 @@ select option { background: var(--bg-panel); }
 /* Override tab-pane padding for the map tab — it manages its own layout */
 #tab-map.active {
   padding: 0;
+  max-width: none;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -840,14 +846,42 @@ select option { background: var(--bg-panel); }
 
 .map-toolbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   padding: .4rem .75rem;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border);
-  gap: .5rem;
   flex-shrink: 0;
+  gap: 0;
+}
+
+.map-tb-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
   flex-wrap: wrap;
+  width: 100%;
+}
+
+.map-tb-sub {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: .3rem 0 .1rem;
+  margin-top: .3rem;
+  border-top: 1px solid var(--border);
+}
+
+.map-tb-sub-label {
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  user-select: none;
+  margin-right: .2rem;
 }
 
 .map-tb-left, .map-tb-center, .map-tb-right {
@@ -855,6 +889,13 @@ select option { background: var(--bg-panel); }
   align-items: center;
   gap: .4rem;
   flex-wrap: wrap;
+}
+
+.map-tb-left {
+  flex-wrap: nowrap;
+  flex-direction: row;
+  align-content: center;
+  justify-content: center;
 }
 
 .map-tb-sep {
@@ -1006,7 +1047,7 @@ select option { background: var(--bg-panel); }
   border: 2px solid var(--accent-gold);
   border-radius: var(--radius-lg);
   padding: 2rem 2.4rem;
-  min-width: 420px;
+  width: min(90vw, 500px);
   text-align: center;
   box-shadow: 0 0 48px rgba(232,184,75,.25), 0 8px 32px rgba(0,0,0,.6);
 }
@@ -1101,6 +1142,11 @@ select option { background: var(--bg-panel); }
     border-top: 1px solid var(--border);
     max-height: 45vh;
   }
+  .map-toolbar { overflow-x: auto; flex-wrap: nowrap; }
+  .map-tb-legend { display: none; }
+  .map-preconfig-select { max-width: 140px; }
+  .explore-bandit { padding: 1.2rem 1rem; }
+  .explore-bandit-reels { flex-direction: column; gap: .8rem; }
 }
 
 .detail-empty {

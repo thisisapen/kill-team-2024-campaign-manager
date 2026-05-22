@@ -256,45 +256,57 @@ const HexMap = (() => {
     ];
 
     tb.innerHTML = `
-      <div class="map-tb-left">
-        <select class="map-preconfig-select" id="map-preconfig-select">
-          <option value="">📋 Pre-configured Maps…</option>
-          ${PRECONFIGURED_MAPS.map(m => `<option value="${m.id}">${m.label}</option>`).join('')}
-        </select>
-        <span class="map-tb-sep"></span>
-        <button class="btn btn-sm ${placeMode ? 'btn-primary' : ''}" id="map-btn-place">📌 Place</button>
-        <span class="map-tb-sep"></span>
-        <button class="btn ${setupMode ? 'btn-primary' : 'btn'} btn-sm" id="map-btn-setup">✎ Setup</button>
-        ${setupMode ? `
+      <div class="map-tb-main">
+        <div class="map-tb-left">
+          <select class="map-preconfig-select" id="map-preconfig-select" title="Load a pre-built map layout">
+            <option value="">📋 Pre-configured Maps…</option>
+            ${PRECONFIGURED_MAPS.map(m => `<option value="${m.id}">${m.label}</option>`).join('')}
+          </select>
           <span class="map-tb-sep"></span>
-          ${brushes.map(b => `
-            <button class="btn btn-sm map-brush-btn ${setupBrush === b.val ? 'brush-active' : ''}"
-              data-brush="${b.val}">${b.label}</button>
-          `).join('')}
-        ` : ''}
-      </div>
+          <button class="btn btn-sm ${placeMode ? 'btn-primary' : ''}" id="map-btn-place"
+            title="Toggle hex placement — click blue ghost outlines to add hexes">📌 Place</button>
+          <span class="map-tb-sep"></span>
+          <button class="btn ${setupMode ? 'btn-primary' : 'btn'} btn-sm" id="map-btn-setup"
+            title="Toggle Setup mode — choose a brush then click hexes to paint their type">✎ Setup</button>
+        </div>
 
-      <div class="map-tb-center">
-        <div class="gen-btn-wrap">
-          <button class="btn btn-sm ${genPanelOpen ? 'btn-primary' : ''}" id="map-btn-generate">⚡ Generate</button>
-          ${genPanelOpen ? renderGenPanel() : ''}
+        <div class="map-tb-right">
+          <button class="btn btn-sm" id="map-zoom-out" title="Zoom out">−</button>
+          <span class="map-tb-zoom">${hexSize}px</span>
+          <button class="btn btn-sm" id="map-zoom-in" title="Zoom in">+</button>
+          <button class="btn btn-sm" id="map-zoom-fit" title="Fit entire map in view">Fit</button>
+          <span class="map-tb-sep"></span>
+          <span class="map-tb-legend">
+            <span class="legend-pip legend-surface"></span>Surface
+            <span class="legend-pip legend-tomb"></span>Tomb
+            <span class="legend-pip legend-blocked"></span>Blocked
+          </span>
         </div>
       </div>
 
-      <div class="map-tb-right">
-        <button class="btn btn-sm btn-danger" id="map-btn-clear">🗑 Clear</button>
-        <span class="map-tb-sep"></span>
-        <button class="btn btn-sm" id="map-zoom-out">−</button>
-        <span class="map-tb-zoom">${hexSize}px</span>
-        <button class="btn btn-sm" id="map-zoom-in">+</button>
-        <button class="btn btn-sm" id="map-zoom-fit">Fit</button>
-        <span class="map-tb-sep"></span>
-        <span class="map-tb-legend">
-          <span class="legend-pip legend-surface"></span>Surface
-          <span class="legend-pip legend-tomb"></span>Tomb
-          <span class="legend-pip legend-blocked"></span>Blocked
-        </span>
-      </div>
+      ${placeMode ? `
+        <div class="map-tb-sub">
+          <span class="map-tb-sub-label">Place:</span>
+          <button class="btn btn-sm btn-danger" id="map-btn-clear"
+            title="Remove all hexes from the map">🗑 Clear All</button>
+        </div>
+      ` : ''}
+
+      ${setupMode ? `
+        <div class="map-tb-sub">
+          <span class="map-tb-sub-label">Brush:</span>
+          ${brushes.map(b => `
+            <button class="btn btn-sm map-brush-btn ${setupBrush === b.val ? 'brush-active' : ''}"
+              data-brush="${b.val}" title="Paint hexes as: ${b.val}">${b.label}</button>
+          `).join('')}
+          <span class="map-tb-sep"></span>
+          <div class="gen-btn-wrap">
+            <button class="btn btn-sm ${genPanelOpen ? 'btn-primary' : ''}" id="map-btn-generate"
+              title="Auto-generate a hex map layout">⚡ Generate</button>
+            ${genPanelOpen ? renderGenPanel() : ''}
+          </div>
+        </div>
+      ` : ''}
     `;
 
     document.getElementById('map-preconfig-select').addEventListener('change', e => {
@@ -312,20 +324,25 @@ const HexMap = (() => {
     });
     document.getElementById('map-btn-place').addEventListener('click', () => {
       placeMode = !placeMode;
+      if (placeMode) setupMode = false;
       renderSVG();
       renderToolbar();
     });
     document.getElementById('map-btn-setup').addEventListener('click', () => {
       setupMode = !setupMode;
+      if (setupMode) { placeMode = false; renderSVG(); }
       renderToolbar();
     });
     document.querySelectorAll('.map-brush-btn').forEach(btn => {
       btn.addEventListener('click', () => { setupBrush = btn.dataset.brush; renderToolbar(); });
     });
-    document.getElementById('map-btn-generate').addEventListener('click', () => {
-      genPanelOpen = !genPanelOpen;
-      renderToolbar();
-    });
+    const genBtn = document.getElementById('map-btn-generate');
+    if (genBtn) {
+      genBtn.addEventListener('click', () => {
+        genPanelOpen = !genPanelOpen;
+        renderToolbar();
+      });
+    }
     if (genPanelOpen) {
       document.querySelectorAll('.gen-mode-btn').forEach(btn => {
         btn.addEventListener('click', () => { genMode = btn.dataset.mode; renderToolbar(); });
@@ -353,16 +370,19 @@ const HexMap = (() => {
       renderToolbar();
     });
     document.getElementById('map-zoom-fit').addEventListener('click', fitZoom);
-    document.getElementById('map-btn-clear').addEventListener('click', () => {
-      const count = Object.keys(App.state.hexes).length;
-      if (count === 0) { App.showToast('Map is already empty.', 'info'); return; }
-      if (!confirm(`Clear all ${count} hex${count !== 1 ? 'es' : ''} from the map? This cannot be undone.`)) return;
-      App.state.hexes = {};
-      selectedId = null;
-      App.save();
-      renderAll();
-      App.showToast('Map cleared.', 'success');
-    });
+    const clearBtn = document.getElementById('map-btn-clear');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        const count = Object.keys(App.state.hexes).length;
+        if (count === 0) { App.showToast('Map is already empty.', 'info'); return; }
+        if (!confirm(`Clear all ${count} hex${count !== 1 ? 'es' : ''} from the map? This cannot be undone.`)) return;
+        App.state.hexes = {};
+        selectedId = null;
+        App.save();
+        renderAll();
+        App.showToast('Map cleared.', 'success');
+      });
+    }
   }
 
   function renderGenPanel() {
