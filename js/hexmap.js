@@ -1137,6 +1137,9 @@ const HexMap = (() => {
         const el = document.getElementById('header-threat');
         if (el) el.textContent = `Threat: ${App.state.campaign.threatLevel}/${App.state.campaign.maxThreat}`;
         App.showToast(`Tomb explored — threat roll: D6=${roll} (4+) → Threat raises to ${App.state.campaign.threatLevel}!`, 'warn');
+        if (App.state.campaign.threatLevel >= App.state.campaign.maxThreat) {
+          App.showCampaignEndPopup();
+        }
       } else {
         App.showToast(`Tomb explored — threat roll: D6=${roll} (needs 4+) → Threat unchanged.`, 'info');
       }
@@ -1189,14 +1192,19 @@ const HexMap = (() => {
         if (hdr) hdr.textContent = `Threat: ${c.threatLevel}/${c.maxThreat}`;
         const lvlEl = document.getElementById('threat-popup-level');
         if (lvlEl) lvlEl.textContent = c.threatLevel;
-        resultEl.innerHTML = `<div class="threat-result-raised">🎲 Rolled a <strong>${roll}</strong> — 4+ met! Threat level rises to <strong>${c.threatLevel}</strong>${c.threatLevel >= c.maxThreat ? ' — <em>maximum reached, campaign ends this round!</em>' : ''}.</div>`;
+        resultEl.innerHTML = `<div class="threat-result-raised">🎲 Rolled a <strong>${roll}</strong> — 4+ met! Threat level rises to <strong>${c.threatLevel}</strong>${c.threatLevel >= c.maxThreat ? ' — <em>maximum reached!</em>' : ''}.</div>`;
       } else {
         resultEl.innerHTML = `<div class="threat-result-safe">🎲 Rolled a <strong>${roll}</strong> — needs 4+. Threat level remains at <strong>${c.threatLevel}</strong>.</div>`;
       }
 
       rollBtn.style.display = 'none';
       contBtn.style.display = '';
-      contBtn.addEventListener('click', () => { overlay.remove(); });
+      contBtn.addEventListener('click', () => {
+        overlay.remove();
+        if (raised && c.threatLevel >= c.maxThreat) {
+          App.showCampaignEndPopup();
+        }
+      });
     });
   }
 

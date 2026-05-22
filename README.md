@@ -46,7 +46,7 @@ A browser-based campaign management tool to generate maps and management campaig
 ### Settings Tab
 - Rename the campaign
 - Toggle Solo/Coop vs. Multiplayer mode
-- Set Max Threat Level (campaign ends when reached; 7 recommended)
+- Set Max Threat Level (campaign ends when reached)
 - Adjust current round
 - Toggle **Auto-roll Threat (Solo)** — when off, a popup lets you roll manually; when on, the D6 is rolled automatically and shown as a toast
 - Export campaign to JSON / Import from JSON

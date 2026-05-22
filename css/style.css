@@ -1251,7 +1251,8 @@ select option { background: var(--bg-panel); }
 
 /* ─── Threat Roll Popup ───────────────────────────────────────────────────── */
 #threat-roll-overlay,
-#tomb-warning-overlay {
+#tomb-warning-overlay,
+#campaign-end-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.85);
@@ -1354,6 +1355,15 @@ select option { background: var(--bg-panel); }
   user-select: none;
 }
 .tomb-warn-label input[type="checkbox"] { accent-color: var(--accent-gold); width: 14px; height: 14px; }
+
+/* ─── Campaign End Modal ───────────────────────────────────────────────────── */
+.campaign-end-modal {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 48px rgba(232,184,75,.22), 0 8px 32px rgba(0,0,0,.65);
+}
+.campaign-end-header {
+  color: var(--accent-gold);
+}
 
 @media (max-width: 700px) {
   .map-wrap { flex-direction: column; }

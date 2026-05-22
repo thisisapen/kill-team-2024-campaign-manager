@@ -457,8 +457,9 @@ const App = (() => {
             </div>
             <div class="phase-controls">
               <button class="btn btn-sm" id="btn-prev-phase" ${c.currentPhase === 0 && c.currentRound === 1 ? 'disabled' : ''}>◀ Prev Phase</button>
-              <button class="btn btn-primary btn-sm" id="btn-next-phase">
-                ${c.currentPhase < 3 ? 'Next Phase ▶' : 'End Round →'}
+              <button class="btn btn-primary btn-sm" id="btn-next-phase"
+                ${c.currentPhase === 3 && c.threatLevel >= c.maxThreat ? 'disabled title="Campaign over — threat level has reached maximum"' : ''}>
+                ${c.currentPhase < 3 ? 'Next Phase ▶' : c.threatLevel >= c.maxThreat ? '☠ Campaign Over' : 'End Round →'}
               </button>
             </div>
           </div>
@@ -483,7 +484,7 @@ const App = (() => {
               <span class="threat-slash">/</span>
               <span class="threat-max">${c.maxThreat}</span>
             </div>
-            ${c.threatLevel >= c.maxThreat ? '<div class="tag tag-warn threat-end-warn">Campaign ends at round end!</div>' : ''}
+            ${c.threatLevel >= c.maxThreat ? '<div class="tag tag-warn threat-end-warn">☠ Campaign over — no further rounds</div>' : ''}
 
             ${isSolo ? renderSoloThreatControls() : renderMultiThreatControls()}
           </div>
@@ -647,23 +648,65 @@ const App = (() => {
     save();
     renderLogTab();
     if (c.threatLevel >= c.maxThreat) {
-      showToast('Threat has reached maximum! Campaign ends at the end of this round.', 'danger');
+      showCampaignEndPopup();
     }
+  }
+
+  function showCampaignEndPopup() {
+    if (document.getElementById('campaign-end-overlay')) return; // already shown
+    const c = state.campaign;
+    const overlay = document.createElement('div');
+    overlay.id = 'campaign-end-overlay';
+    overlay.innerHTML = `
+      <div class="threat-roll-modal campaign-end-modal">
+        <div class="threat-roll-header campaign-end-header">☠ CTESIPHUS EXPEDITION ENDED</div>
+        <div class="threat-roll-body">
+          <p class="threat-roll-rule-title">The campaign has come to an end</p>
+          <div class="threat-roll-rule">
+            <p>The threat level has reached its maximum of <strong>${c.maxThreat}</strong>. The area has become too intense for your kill team to conduct an expedition &mdash; <strong>they must withdraw.</strong>.</p>
+            ${c.isSolo
+              ? `<p>The campaign concludes at the end of Round <strong>${c.currentRound}</strong>. If you have scored <strong>10 or more Campaign points</strong>, your expedition was a success!</p>`
+              : `<p>The campaign concludes at the end of Round <strong>${c.currentRound}</strong>. Award objectives and titles to determine the overall winner.</p>`
+            }
+            <p><em>You may still review your campaign log and stats, but no further rounds can be played.</em></p>
+          </div>
+        </div>
+        <div class="threat-roll-footer">
+          <button class="btn btn-primary" id="campaign-end-ack-btn">Acknowledge</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('campaign-end-ack-btn').addEventListener('click', () => {
+      overlay.remove();
+      renderLogTab();
+    });
   }
 
   function advancePhase() {
     const c = state.campaign;
     if (c.currentPhase < 3) {
       c.currentPhase++;
+      save();
+      renderLogTab();
     } else {
-      // End of round
+      // End of round — check/apply threat before advancing
+      if (!c.isSolo) {
+        // Multiplayer: Threat Phase raises threat by 1. changeThreat shows popup if max hit.
+        changeThreat(1);
+        if (c.threatLevel >= c.maxThreat) return; // campaign over, don't start new round
+      } else {
+        // Solo: threat raises happen during the round; block if already at max
+        if (c.threatLevel >= c.maxThreat) {
+          showCampaignEndPopup();
+          return;
+        }
+      }
       c.currentPhase = 0;
       c.currentRound++;
-      // Multiplayer: raise threat by 1 each round's threat phase
-      if (!c.isSolo) changeThreat(1);
+      save();
+      renderLogTab();
     }
-    save();
-    renderLogTab();
   }
 
   function prevPhase() {
@@ -939,6 +982,7 @@ const App = (() => {
     load,
     get state() { return state; },
     showToast,
+    showCampaignEndPopup,
     switchTab,
     renderMapPlaceholder,
     escHtml
