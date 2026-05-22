@@ -61,6 +61,71 @@ const HexMap = (() => {
         _mh(2,5,25,'surface'), _mh(3,4,26,'surface'),
       ].map(h => [h.id, h]))
     },
+    {
+      id: 'ctesiphus_map2',
+      label: 'Ctesiphus Expedition \u2013 Map 2',
+      hexes: Object.fromEntries([
+        _mh(0,0,1,'surface'),  _mh(1,-1,2,'surface'), _mh(2,-1,3,'blocked'), _mh(3,-2,4,'surface'),
+        _mh(0,1,5,'surface'),  _mh(1,0,6,'tomb'),     _mh(2,0,7,'tomb'),     _mh(3,-1,8,'tomb'),
+        _mh(4,-1,9,'surface'), _mh(0,2,10,'surface'), _mh(1,1,11,'tomb'),    _mh(2,1,12,'tomb'),
+        _mh(3,0,13,'tomb'),    _mh(4,0,14,'tomb'),    _mh(5,-1,15,'blocked'),_mh(0,3,16,'surface'),
+        _mh(1,2,17,'blocked'), _mh(2,2,18,'tomb'),    _mh(3,1,19,'tomb'),    _mh(4,1,20,'tomb'),
+        _mh(5,0,21,'surface'), _mh(1,3,22,'surface'), _mh(2,3,23,'tomb'),    _mh(3,2,24,'tomb'),
+        _mh(4,2,25,'surface'), _mh(5,1,26,'surface'), _mh(1,4,27,'surface'), _mh(2,4,28,'tomb'),
+        _mh(3,3,29,'tomb'),    _mh(4,3,30,'blocked'), _mh(2,5,31,'surface'), _mh(3,4,32,'surface'),
+        _mh(4,4,33,'surface'),
+      ].map(h => [h.id, h]))
+    },
+    {
+      id: 'ctesiphus_map3',
+      label: 'Ctesiphus Expedition \u2013 Map 3',
+      hexes: Object.fromEntries([
+        _mh(0,0,1,'surface'),  _mh(1,-1,2,'blocked'), _mh(2,-1,3,'surface'), _mh(3,-2,4,'surface'),
+        _mh(0,1,5,'surface'),  _mh(1,0,6,'tomb'),     _mh(2,0,7,'tomb'),     _mh(3,-1,8,'tomb'),
+        _mh(4,-1,9,'surface'), _mh(0,2,10,'blocked'), _mh(1,1,11,'surface'), _mh(2,1,12,'tomb'),
+        _mh(3,0,13,'tomb'),    _mh(4,0,14,'surface'), _mh(0,3,15,'surface'), _mh(1,2,16,'tomb'),
+        _mh(2,2,17,'surface'), _mh(3,1,18,'tomb'),    _mh(4,1,19,'surface'), _mh(0,4,20,'surface'),
+        _mh(1,3,21,'tomb'),    _mh(2,3,22,'tomb'),    _mh(3,2,23,'surface'), _mh(4,2,24,'blocked'),
+        _mh(0,5,25,'blocked'), _mh(1,4,26,'tomb'),    _mh(2,4,27,'tomb'),    _mh(3,3,28,'tomb'),
+        _mh(4,3,29,'surface'), _mh(1,5,30,'surface'), _mh(2,5,31,'tomb'),    _mh(3,4,32,'tomb'),
+        _mh(4,4,33,'surface'), _mh(2,6,34,'surface'), _mh(3,5,35,'surface'), _mh(4,5,36,'blocked'),
+      ].map(h => [h.id, h]))
+    },
+    {
+      id: 'ctesiphus_map4',
+      label: 'Ctesiphus Expedition \u2013 Map 4',
+      hexes: Object.fromEntries([
+        _mh(0,0,1,'surface'),  _mh(1,-1,2,'surface'), _mh(0,1,3,'surface'),  _mh(1,0,4,'tomb'),
+        _mh(2,0,5,'surface'),  _mh(3,-1,6,'blocked'), _mh(0,2,7,'surface'),  _mh(1,1,8,'tomb'),
+        _mh(2,1,9,'tomb'),     _mh(3,0,10,'tomb'),    _mh(4,0,11,'surface'), _mh(0,3,12,'surface'),
+        _mh(1,2,13,'tomb'),    _mh(2,2,14,'tomb'),    _mh(3,1,15,'tomb'),    _mh(4,1,16,'surface'),
+        _mh(0,4,17,'surface'), _mh(1,3,18,'tomb'),    _mh(2,3,19,'blocked'), _mh(3,2,20,'tomb'),
+        _mh(4,2,21,'surface'), _mh(0,5,22,'blocked'), _mh(1,4,23,'tomb'),    _mh(2,4,24,'tomb'),
+        _mh(3,3,25,'tomb'),    _mh(4,3,26,'surface'), _mh(0,6,27,'surface'), _mh(1,5,28,'tomb'),
+        _mh(2,5,29,'tomb'),    _mh(3,4,30,'tomb'),    _mh(4,4,31,'surface'), _mh(1,6,32,'surface'),
+        _mh(2,6,33,'surface'), _mh(3,5,34,'tomb'),    _mh(4,5,35,'blocked'), _mh(3,6,36,'surface'),
+        _mh(4,6,37,'surface'),
+      ].map(h => [h.id, h]))
+    },
+    {
+      id: 'ctesiphus_map5',
+      label: 'Ctesiphus Expedition \u2013 Map 5',
+      hexes: Object.fromEntries([
+        _mh(0,0,1,'surface'),  _mh(1,-1,2,'surface'), _mh(2,-1,3,'surface'), _mh(0,1,4,'surface'),
+        _mh(1,0,5,'blocked'),  _mh(2,0,6,'tomb'),     _mh(3,-1,7,'blocked'), _mh(4,-1,8,'surface'),
+        _mh(0,2,9,'surface'),  _mh(1,1,10,'tomb'),    _mh(2,1,11,'tomb'),    _mh(3,0,12,'tomb'),
+        _mh(4,0,13,'tomb'),    _mh(5,-1,14,'surface'),_mh(0,3,15,'blocked'), _mh(1,2,16,'tomb'),
+        _mh(2,2,17,'tomb'),    _mh(3,1,18,'tomb'),    _mh(4,1,19,'tomb'),    _mh(5,0,20,'surface'),
+        _mh(0,4,21,'surface'), _mh(1,3,22,'tomb'),    _mh(2,3,23,'tomb'),    _mh(3,2,24,'tomb'),
+        _mh(4,2,25,'blocked'), _mh(5,1,26,'surface'), _mh(0,5,27,'surface'), _mh(1,4,28,'tomb'),
+        _mh(2,4,29,'tomb'),    _mh(3,3,30,'tomb'),    _mh(4,3,31,'tomb'),    _mh(5,2,32,'surface'),
+        _mh(0,6,33,'surface'), _mh(1,5,34,'tomb'),    _mh(2,5,35,'blocked'), _mh(3,4,36,'tomb'),
+        _mh(4,4,37,'tomb'),    _mh(5,3,38,'surface'), _mh(0,7,39,'surface'), _mh(1,6,40,'blocked'),
+        _mh(2,6,41,'tomb'),    _mh(3,5,42,'tomb'),    _mh(4,5,43,'tomb'),    _mh(5,4,44,'blocked'),
+        _mh(1,7,45,'surface'), _mh(2,7,46,'surface'), _mh(3,6,47,'tomb'),    _mh(4,6,48,'tomb'),
+        _mh(5,5,49,'surface'), _mh(3,7,50,'surface'), _mh(4,7,51,'surface'), _mh(5,6,52,'surface'),
+      ].map(h => [h.id, h]))
+    },
   ];
 
   // ─── Position helpers ─────────────────────────────────────────────────────────
