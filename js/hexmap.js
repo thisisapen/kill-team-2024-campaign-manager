@@ -1207,11 +1207,16 @@ const HexMap = (() => {
           </label>
         </div>
         <div class="threat-roll-footer">
+          <button class="btn" id="tomb-warn-cancel">Cancel</button>
           <button class="btn btn-primary" id="tomb-warn-continue">Continue to Explore</button>
         </div>
       </div>
     `;
     document.body.appendChild(overlay);
+
+    document.getElementById('tomb-warn-cancel').addEventListener('click', () => {
+      overlay.remove();
+    });
 
     document.getElementById('tomb-warn-continue').addEventListener('click', () => {
       if (document.getElementById('tomb-warn-no-show').checked) {
