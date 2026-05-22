@@ -45,6 +45,7 @@ const App = (() => {
         threatLevel: 0,
         maxThreat: 10,
         threatLowerUsesLeft: 3,
+        autoThreatRoll: false,
         started: false
       },
       killTeams: [],
@@ -729,6 +730,10 @@ const App = (() => {
             <label>Current Round</label>
             <input type="number" id="set-round" value="${c.currentRound}" min="1">
           </div>
+          <div class="field-row">
+            <label title="Solo/Cooperative only. When off, a popup presents the threat rule and lets you roll manually. When on, the D6 is rolled automatically.">Auto-roll Threat (Solo)</label>
+            <input type="checkbox" id="set-auto-threat-roll" ${c.autoThreatRoll ? 'checked' : ''}>
+          </div>
           <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
         </div>
 
@@ -764,6 +769,7 @@ const App = (() => {
     c.isSolo = document.getElementById('set-mode').value === 'true';
     c.maxThreat = parseInt(document.getElementById('set-maxthreat').value, 10) || 10;
     c.currentRound = parseInt(document.getElementById('set-round').value, 10) || 1;
+    c.autoThreatRoll = document.getElementById('set-auto-threat-roll').checked;
     save();
     updateHeader();
     showToast('Settings saved.', 'success');

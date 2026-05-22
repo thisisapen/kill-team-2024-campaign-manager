@@ -1048,7 +1048,7 @@ const HexMap = (() => {
       rows.forEach((el, i) => { el.textContent = items[i]; });
     }
 
-    const TOTAL = 28;
+    const TOTAL = 16;
     let tick = 0;
     function step() {
       tick++;
@@ -1068,9 +1068,85 @@ const HexMap = (() => {
         btn.addEventListener('click', () => { overlay.remove(); onComplete(); });
         return;
       }
-      setTimeout(step, 50 + Math.pow(p, 2.2) * 320);
+      setTimeout(step, 40 + Math.pow(p, 2.5) * 160);
     }
-    setTimeout(step, 120);
+    setTimeout(step, 80);
+  }
+
+  // ─── Threat roll (solo/cooperative) ───────────────────────────────────────
+  function doThreatRoll(hexNum) {
+    if (App.state.campaign.autoThreatRoll) {
+      const roll = Generator.rollD6();
+      if (roll >= 4) {
+        App.state.campaign.threatLevel = Math.min(
+          App.state.campaign.maxThreat,
+          App.state.campaign.threatLevel + 1
+        );
+        App.save();
+        const el = document.getElementById('header-threat');
+        if (el) el.textContent = `Threat: ${App.state.campaign.threatLevel}/${App.state.campaign.maxThreat}`;
+        App.showToast(`Tomb explored — threat roll: D6=${roll} (4+) → Threat raises to ${App.state.campaign.threatLevel}!`, 'warn');
+      } else {
+        App.showToast(`Tomb explored — threat roll: D6=${roll} (needs 4+) → Threat unchanged.`, 'info');
+      }
+    } else {
+      showThreatRollPopup(hexNum);
+    }
+  }
+
+  function showThreatRollPopup(hexNum) {
+    const c = App.state.campaign;
+    const overlay = document.createElement('div');
+    overlay.id = 'threat-roll-overlay';
+    overlay.innerHTML = `
+      <div class="threat-roll-modal">
+        <div class="threat-roll-header">⚠ THREAT ROLL — TOMB EXPLORED</div>
+        <div class="threat-roll-body">
+          <p class="threat-roll-rule-title">Solo / Cooperative Threat Rule</p>
+          <div class="threat-roll-rule">
+            <p>Whenever you explore a <strong>tomb hex</strong> (unless via the Scout campaign action), roll one D6:</p>
+            <ul>
+              <li>On a <strong>4, 5 or 6</strong> — raise the threat level by 1.</li>
+              <li>On a <strong>1, 2 or 3</strong> — threat level is unchanged.</li>
+            </ul>
+            <p>If the threat level reaches its maximum (${c.maxThreat}), the campaign ends at the end of that campaign round — the area has become too intense for your kill team to conduct an expedition.</p>
+          </div>
+          <div class="threat-roll-status">
+            Hex <strong>#${hexNum || '?'}</strong> &nbsp;|&nbsp; Threat: <span id="threat-popup-level" class="threat-popup-level">${c.threatLevel}</span>&thinsp;/&thinsp;${c.maxThreat}
+          </div>
+        </div>
+        <div class="threat-roll-result" id="threat-roll-result"></div>
+        <div class="threat-roll-footer">
+          <button class="btn btn-primary threat-roll-dice-btn" id="threat-roll-btn">🎲 Roll D6</button>
+          <button class="btn" id="threat-continue-btn" style="display:none">Continue</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    document.getElementById('threat-roll-btn').addEventListener('click', () => {
+      const roll = Generator.rollD6();
+      const raised = roll >= 4;
+      const resultEl = document.getElementById('threat-roll-result');
+      const rollBtn  = document.getElementById('threat-roll-btn');
+      const contBtn  = document.getElementById('threat-continue-btn');
+
+      if (raised) {
+        c.threatLevel = Math.min(c.maxThreat, c.threatLevel + 1);
+        App.save();
+        const hdr = document.getElementById('header-threat');
+        if (hdr) hdr.textContent = `Threat: ${c.threatLevel}/${c.maxThreat}`;
+        const lvlEl = document.getElementById('threat-popup-level');
+        if (lvlEl) lvlEl.textContent = c.threatLevel;
+        resultEl.innerHTML = `<div class="threat-result-raised">🎲 Rolled a <strong>${roll}</strong> — 4+ met! Threat level rises to <strong>${c.threatLevel}</strong>${c.threatLevel >= c.maxThreat ? ' — <em>maximum reached, campaign ends this round!</em>' : ''}.</div>`;
+      } else {
+        resultEl.innerHTML = `<div class="threat-result-safe">🎲 Rolled a <strong>${roll}</strong> — needs 4+. Threat level remains at <strong>${c.threatLevel}</strong>.</div>`;
+      }
+
+      rollBtn.style.display = 'none';
+      contBtn.style.display = '';
+      contBtn.addEventListener('click', () => { overlay.remove(); });
+    });
   }
 
   // ─── Explore a hex ────────────────────────────────────────────────────────
@@ -1106,11 +1182,13 @@ const HexMap = (() => {
       hex.conditionRoll = conResult.roll;
 
       // Handle on-explore triggers
-      handleOnExplore(hex, locResult.entry, conResult.entry, hexId);
+      const needsThreatRoll = handleOnExplore(hex, locResult.entry, conResult.entry, hexId);
 
       App.save();
       renderSVG();
       renderDetail(hexId);
+
+      if (needsThreatRoll) doThreatRoll(hex.number);
     });
   }
 
@@ -1163,29 +1241,12 @@ const HexMap = (() => {
       App.showToast(`Hyperfractal Gaol — a prisoner lurks in Hex #${hexId}. Released on first Encamp.`, 'warn');
     }
 
-    // Solo threat roll if tomb hex
-    if (hex.type === 'tomb' && App.state.campaign.isSolo) {
-      const roll = Generator.rollD6();
-      if (roll >= 4) {
-        App.state.campaign.threatLevel = Math.min(
-          App.state.campaign.maxThreat,
-          App.state.campaign.threatLevel + 1
-        );
-        App.showToast(`Tomb explored — threat roll: D6=${roll} (4+) → Threat raises to ${App.state.campaign.threatLevel}!`, 'warn');
-        // Update header
-        const threatEl = document.getElementById('header-threat');
-        if (threatEl) {
-          threatEl.textContent = `Threat: ${App.state.campaign.threatLevel}/${App.state.campaign.maxThreat}`;
-        }
-      } else {
-        App.showToast(`Tomb explored — threat roll: D6=${roll} (needs 4+) → Threat unchanged.`, 'info');
-      }
-    }
-
     App.showToast(
       `Hex #${hexId} explored: ${locEntry.name} (${locEntry.code}) / ${conEntry.name} (${conEntry.code})`,
       'success'
     );
+
+    return hex.type === 'tomb' && App.state.campaign.isSolo;
   }
 
   // ─── Re-roll helpers ──────────────────────────────────────────────────────
