@@ -153,7 +153,7 @@ p:last-child { margin-bottom: 0; }
 /* ─── Tab Panes ───────────────────────────────────────────────────────────── */
 #tab-content {
   flex: 1;
-  overflow: hidden;
+  /*overflow: hidden;*/
   min-height: 0;
 }
 
@@ -167,7 +167,10 @@ p:last-child { margin-bottom: 0; }
   overflow-y: auto;
   box-sizing: border-box;
 }
-.tab-pane.active { display: block; }
+.tab-pane.active {
+  display: block;
+  overflow: visible;
+}
 
 /* ─── Panels ──────────────────────────────────────────────────────────────── */
 .panel {
@@ -326,7 +329,11 @@ select option { background: var(--bg-panel); }
   white-space: normal;
 }
 .help-icon:hover .help-tip,
-.help-icon:focus .help-tip { display: block; }
+.help-icon:focus .help-tip {
+  display: block;
+  background-color: white;
+  z-index: 9000;
+}
 .help-icon .help-tip::after {
   content: '';
   position: absolute;
