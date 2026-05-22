@@ -282,6 +282,61 @@ select option { background: var(--bg-panel); }
 .tag-sp   { background: #1a1a2a; color: var(--accent-blue); border: 1px solid var(--accent-blue); }
 .tag-cp   { background: #2a1a2a; color: var(--accent-purple); border: 1px solid var(--accent-purple); }
 
+/* ─── Help icons ──────────────────────────────────────────────────────────── */
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--border-light);
+  color: var(--text-dim);
+  font-size: 9px;
+  font-weight: 700;
+  cursor: help;
+  position: relative;
+  vertical-align: middle;
+  margin-left: .25rem;
+  user-select: none;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.help-icon:hover,
+.help-icon:focus { background: var(--accent-gold); color: #000; outline: none; }
+.help-icon .help-tip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-panel);
+  border: 1px solid var(--accent-gold);
+  border-radius: var(--radius-md);
+  padding: .6rem .8rem;
+  font-size: .78rem;
+  color: var(--text-secondary);
+  width: 250px;
+  z-index: 1200;
+  line-height: 1.55;
+  font-weight: 400;
+  text-align: left;
+  box-shadow: 0 4px 20px rgba(0,0,0,.65);
+  pointer-events: none;
+  white-space: normal;
+}
+.help-icon:hover .help-tip,
+.help-icon:focus .help-tip { display: block; }
+.help-icon .help-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--accent-gold);
+}
+
 /* ─── Empty state ─────────────────────────────────────────────────────────── */
 .empty-state {
   color: var(--text-dim);

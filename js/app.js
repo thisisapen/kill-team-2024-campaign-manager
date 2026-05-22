@@ -138,6 +138,17 @@ const App = (() => {
 
   // ─── Phase names ─────────────────────────────────────────────────────────
   const PHASE_NAMES = ['Threat Phase', 'Action Phase', 'Battle Phase', 'Movement Phase'];
+  const PHASE_DESCS = [
+    'Resolve all location rules that trigger in the Threat phase, then raise threat by 1 (multiplayer) or use the Solo Threat controls below.',
+    'Each player performs one campaign action: Scout, Resupply, Search, Encamp, or Demolish. Supply point cost must be paid.',
+    'Play a game of Kill Team using the condition rules of the relevant hex. Win → 1 Campaign point. Draw or Loss → 1 Supply point.',
+    'Move your kill team up to 3 hexes (−1 SP per hex moved), or Regroup to your nearest base/camp (free), or Hold in place.',
+  ];
+
+  // ─── Help icon helper ────────────────────────────────────────────────
+  function helpIcon(html) {
+    return `<span class="help-icon" tabindex="0">?<span class="help-tip">${html}</span></span>`;
+  }
 
   // ─── Kill Team Tab ────────────────────────────────────────────────────────
   function renderKillTeamTab() {
@@ -439,7 +450,7 @@ const App = (() => {
               ${PHASE_NAMES.map((name, i) => `
                 <div class="phase-item ${i === c.currentPhase ? 'phase-current' : i < c.currentPhase ? 'phase-done' : ''}">
                   <span class="phase-check">${i < c.currentPhase ? '✓' : i === c.currentPhase ? '▶' : '○'}</span>
-                  <span>${name}</span>
+                  <span>${name}</span>${helpIcon(PHASE_DESCS[i])}
                 </div>
               `).join('')}
             </div>
@@ -531,7 +542,7 @@ const App = (() => {
       <div class="threat-controls">
         <h4>Solo Threat Controls</h4>
         <div class="threat-roll-group">
-          <p class="threat-help">Raise threat (roll D6)</p>
+          <p class="threat-help">Raise threat (roll D6)${helpIcon('Solo/Coop rule: when these events occur, roll D6 against the threshold shown. The Explore Tomb roll is also triggered automatically from the Map tab.')}</p>
           <div class="threat-btn-row">
             <button class="btn btn-sm threat-raise-btn" data-threshold="4" title="Threshold 4+ (explore tomb)">Explore Tomb (4+)</button>
             <button class="btn btn-sm threat-raise-btn" data-threshold="3" title="Threshold 3+ (battle win)">Battle Win (3+)</button>
@@ -543,14 +554,14 @@ const App = (() => {
           </div>
         </div>
         <div class="threat-lower-group">
-          <p class="threat-help">Lower threat via Resupply <span class="threat-uses">(${usesLeft} use${usesLeft !== 1 ? 's' : ''} remaining)</span></p>
+          <p class="threat-help">Lower threat via Resupply <span class="threat-uses">(${usesLeft} use${usesLeft !== 1 ? 's' : ''} remaining)</span>${helpIcon('Rules p.6: During the Resupply action you may lower the threat level — by 1 from any hex, or by D3 if in your base or camp. You can only do this <strong>3 times per campaign total</strong>, so choose carefully. Uses are tracked here and cannot be recovered.')}</p>
           <div class="threat-btn-row">
             <button class="btn btn-sm btn-success threat-lower-btn" data-amount="1" ${usesLeft <= 0 ? 'disabled' : ''}>−1 (any hex)</button>
             <button class="btn btn-sm btn-success threat-lower-btn" data-amount="d3" ${usesLeft <= 0 ? 'disabled' : ''}>−D3 (base or camp)</button>
           </div>
         </div>
         <div class="threat-manual-group">
-          <p class="threat-help">Manual override</p>
+          <p class="threat-help">Manual override${helpIcon('Directly adjust the threat level for bookkeeping — e.g. correcting an error or applying a rule not covered by the buttons above.')}</p>
           <div class="threat-btn-row">
             <button class="btn btn-sm threat-manual-btn" data-delta="-1">−1</button>
             <button class="btn btn-sm threat-manual-btn" data-delta="1">+1</button>
@@ -716,22 +727,14 @@ const App = (() => {
             <input type="text" id="set-name" value="${escHtml(c.name)}">
           </div>
           <div class="field-row">
-            <label>Grid Columns</label>
-            <input type="number" id="set-mapcols" value="${c.mapCols || 8}" min="1" max="30" title="Hint only — use Place mode on the map to add/remove hexes">
-          </div>
-          <div class="field-row">
-            <label>Grid Rows</label>
-            <input type="number" id="set-maprows" value="${c.mapRows || 7}" min="1" max="30" title="Hint only — use Place mode on the map to add/remove hexes">
-          </div>
-          <div class="field-row">
-            <label>Mode</label>
+            <label>Mode${helpIcon('<strong>Solo/Cooperative:</strong> threat moves up and down based on D6 rolls each campaign event. <strong>Multiplayer:</strong> threat raises by 1 automatically each Threat phase.')}</label>
             <select id="set-mode">
               <option value="true" ${c.isSolo ? 'selected' : ''}>Solo / Cooperative</option>
               <option value="false" ${!c.isSolo ? 'selected' : ''}>Multiplayer</option>
             </select>
           </div>
           <div class="field-row">
-            <label>Max Threat Level</label>
+            <label>Max Threat Level${helpIcon('When threat reaches this value the campaign ends at the end of that round. Rules recommend <strong>7</strong> for an average-length campaign.')}</label>
             <input type="number" id="set-maxthreat" value="${c.maxThreat}" min="1" max="20">
           </div>
           <div class="field-row">
@@ -739,7 +742,7 @@ const App = (() => {
             <input type="number" id="set-round" value="${c.currentRound}" min="1">
           </div>
           <div class="field-row">
-            <label title="Solo/Cooperative only. When off, a popup presents the threat rule and lets you roll manually. When on, the D6 is rolled automatically.">Auto-roll Threat (Solo)</label>
+            <label title="Solo/Cooperative only. When off, a popup presents the threat rule and lets you roll manually. When on, the D6 is rolled automatically.">Auto-roll Threat (Solo)${helpIcon('Only applies in Solo/Cooperative mode. <strong>No (default):</strong> when you explore a tomb hex, a popup shows the rule and lets you click to roll. <strong>Yes:</strong> the D6 is rolled automatically and result shown as a toast.')}</label>
             <select id="set-auto-threat-roll">
               <option value="false" ${!c.autoThreatRoll ? 'selected' : ''}>No</option>
               <option value="true" ${c.autoThreatRoll ? 'selected' : ''}>Yes</option>
@@ -775,8 +778,6 @@ const App = (() => {
   function saveSettings() {
     const c = state.campaign;
     c.name = document.getElementById('set-name').value.trim() || c.name;
-    c.mapCols = parseInt(document.getElementById('set-mapcols').value, 10) || 8;
-    c.mapRows = parseInt(document.getElementById('set-maprows').value, 10) || 7;
     c.isSolo = document.getElementById('set-mode').value === 'true';
     c.maxThreat = parseInt(document.getElementById('set-maxthreat').value, 10) || 10;
     c.currentRound = parseInt(document.getElementById('set-round').value, 10) || 1;
@@ -848,8 +849,6 @@ const App = (() => {
       const c = state.campaign;
       c.name = document.getElementById('modal-name').value.trim() || 'Ctesiphus Expedition';
       c.isSolo = document.getElementById('modal-mode').value === 'true';
-      c.mapCols = parseInt(document.getElementById('modal-mapcols').value, 10) || 8;
-      c.mapRows = parseInt(document.getElementById('modal-maprows').value, 10) || 7;
       c.maxThreat = parseInt(document.getElementById('modal-maxthreat').value, 10) || 10;
       c.started = true;
       save();

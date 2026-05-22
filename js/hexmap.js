@@ -641,6 +641,19 @@ const HexMap = (() => {
     } else {
       runChunked();
     }
+
+    // Sprinkle random blocked hexes (3-4 for <37 hexes, 4-5 for 37+)
+    const _allIds = Object.keys(App.state.hexes);
+    const _baseSet = new Set(App.state.killTeams.map(t => String(t.baseHex)).filter(Boolean));
+    const _campSet = new Set(App.state.killTeams.flatMap(t => (t.campHexes || []).map(String)));
+    const _candidates = _allIds.filter(id => !_baseSet.has(id) && !_campSet.has(id));
+    const _blockMin = _allIds.length < 37 ? 3 : 4;
+    const _blockMax = _allIds.length < 37 ? 4 : 5;
+    const _blockCount = _blockMin + Math.floor(Math.random() * (_blockMax - _blockMin + 1));
+    _candidates.sort(() => Math.random() - 0.5).slice(0, _blockCount).forEach(id => {
+      App.state.hexes[id].type = 'blocked';
+    });
+
     App.save();
     App.showToast('Map generated!', 'success');
   }
