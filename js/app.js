@@ -14,8 +14,16 @@ const App = (() => {
     'CELESTIAN INSIDIANTS',
     'CHAOS CULT',
     'DEATHWATCH',
+    'EXACTION SQUAD',
+    'FARSTALKER KINBAND',
+    'FELLGOR RAVAGERS',
     'GOREMONGERS',
+    'HAND OF THE ARCHON',
+    'HEARTHKYN SALVAGERS',
     'HERNKYN YAEGIRS',
+    'HIEROTEK CIRCLE',
+    'IMPERIAL NAVY BREACHERS',
+    'KASRKIN',
     'MANDRAKES',
     'MURDERWING',
     'NEMESIS CLAW',
@@ -732,7 +740,10 @@ const App = (() => {
           </div>
           <div class="field-row">
             <label title="Solo/Cooperative only. When off, a popup presents the threat rule and lets you roll manually. When on, the D6 is rolled automatically.">Auto-roll Threat (Solo)</label>
-            <input type="checkbox" id="set-auto-threat-roll" ${c.autoThreatRoll ? 'checked' : ''}>
+            <select id="set-auto-threat-roll">
+              <option value="false" ${!c.autoThreatRoll ? 'selected' : ''}>No</option>
+              <option value="true" ${c.autoThreatRoll ? 'selected' : ''}>Yes</option>
+            </select>
           </div>
           <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
         </div>
@@ -769,7 +780,7 @@ const App = (() => {
     c.isSolo = document.getElementById('set-mode').value === 'true';
     c.maxThreat = parseInt(document.getElementById('set-maxthreat').value, 10) || 10;
     c.currentRound = parseInt(document.getElementById('set-round').value, 10) || 1;
-    c.autoThreatRoll = document.getElementById('set-auto-threat-roll').checked;
+    c.autoThreatRoll = document.getElementById('set-auto-threat-roll').value === 'true';
     save();
     updateHeader();
     showToast('Settings saved.', 'success');
