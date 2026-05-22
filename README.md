@@ -29,7 +29,7 @@ A browser-based campaign management tool to generate maps and management campaig
 - Objective tracker and freeform notes per team
 
 ### Campaign Log Tab
-- **Round & phase tracker** — displays current round and phase (Threat → Action → Battle → Movement); advance or revert one phase at a time; ending Movement phase increments the round
+- **Round & phase tracker** — displays current round and phase (Movement → Battle → Action → Threat); advance or revert one phase at a time; ending the Threat phase increments the round
 - **Phase tooltips** — hover `?` icons next to each phase name for a summary of what happens in that phase
 - **Threat meter** — visual pip meter showing current threat vs. maximum
 - **Solo Threat Controls** (Solo/Coop mode only):

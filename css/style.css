@@ -71,6 +71,7 @@ p:last-child { margin-bottom: 0; }
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  overflow-y: scroll;
 }
 
 /* ─── Header ─────────────────────────────────────────────────────────────── */

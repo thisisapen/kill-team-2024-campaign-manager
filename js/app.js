@@ -49,7 +49,7 @@ const App = (() => {
         mapRows: 7,
         isSolo: true,
         currentRound: 1,
-        currentPhase: 0,       // 0=Threat, 1=Action, 2=Battle, 3=Movement
+        currentPhase: 0,       // 0=Movement, 1=Battle, 2=Action, 3=Threat
         threatLevel: 0,
         maxThreat: 10,
         threatLowerUsesLeft: 3,
@@ -138,12 +138,12 @@ const App = (() => {
   }
 
   // ─── Phase names ─────────────────────────────────────────────────────────
-  const PHASE_NAMES = ['Threat Phase', 'Action Phase', 'Battle Phase', 'Movement Phase'];
+  const PHASE_NAMES = ['Movement Phase', 'Battle Phase', 'Action Phase', 'Threat Phase'];
   const PHASE_DESCS = [
-    'Resolve all location rules that trigger in the Threat phase, then raise threat by 1 (multiplayer) or use the Solo Threat controls below.',
-    'Each player performs one campaign action: Scout, Resupply, Search, Encamp, or Demolish. Supply point cost must be paid.',
-    'Play a game of Kill Team using the condition rules of the relevant hex. Win → 1 Campaign point. Draw or Loss → 1 Supply point.',
     'Move your kill team up to 3 hexes (−1 SP per hex moved), or Regroup to your nearest base/camp (free), or Hold in place.',
+    'Play a game of Kill Team using the condition rules of the relevant hex. Win → 1 Campaign point. Draw or Loss → 1 Supply point.',
+    'Each player performs one campaign action: Scout, Resupply, Search, Encamp, or Demolish. Supply point cost must be paid.',
+    'Resolve all location rules that trigger in the Threat phase, then raise threat by 1 (multiplayer) or use the Solo Threat controls below.',
   ];
 
   // ─── Help icon helper ────────────────────────────────────────────────
